@@ -12,7 +12,7 @@ module.exports = {
   fetchOutdatedDependencies: async function() {
     return [
       ...(await checkAPM(packageJSON)),
-      ...(await checkNPM(repositoryRootPath))
+      // ...(await checkNPM(repositoryRootPath))
     ];
   },
   updatePackageJson: async function({
