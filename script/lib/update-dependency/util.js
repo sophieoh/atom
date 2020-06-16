@@ -26,11 +26,13 @@ module.exports = {
     const updatePackageJson = JSON.parse(JSON.stringify(packageJSON));
     if (updatePackageJson.dependencies[moduleName]) {
       // gets the exact version installed in package json for native packages
-      const searchString = isCorePackage ? installed : packageJson;
+      const searchString = isCorePackage
+        ? installed
+        : new RegExp(`\\${packageJson}`);
       updatePackageJson.dependencies[
         moduleName
       ] = updatePackageJson.dependencies[moduleName].replace(
-        new RegExp(`\\${searchString}`),
+        searchString,
         latest
       );
     }
@@ -38,7 +40,7 @@ module.exports = {
       updatePackageJson.packageDependencies[
         moduleName
       ] = updatePackageJson.packageDependencies[moduleName].replace(
-        new RegExp(`\\${installed}`),
+        new RegExp(`${installed}`),
         latest
       );
     }
