@@ -11,7 +11,8 @@ module.exports = async function({ dependencies, packageDependencies }) {
     const promises = coreDependencies.map(async dependency => {
       return fetch(`https://atom.io/api/packages/${dependency}`)
         .then(res => res.json())
-        .then(res => res);
+        .then(res => res)
+        .catch(ex => console.log(ex.message));
     });
 
     const packages = await Promise.all(promises);
