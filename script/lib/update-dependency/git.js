@@ -38,6 +38,13 @@ module.exports = {
       throw Error(ex.message);
     }
   },
+  publishBranch: async function(branch) {
+    try {
+      return git.push('origin', branch);
+    } catch (ex) {
+      throw Error(ex.message);
+    }
+  },
   deleteBranch: async function(branch) {
     try {
       await git.deleteLocalBranch(branch, true);
