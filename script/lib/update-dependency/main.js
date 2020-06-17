@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const {
   makeBranch,
   createCommit,
@@ -9,7 +10,7 @@ const {
   fetchOutdatedDependencies,
   runApmInstall
 } = require('./util');
-const { createPR } = require('./pull-request');
+const { createPR, findPR } = require('./pull-request');
 module.exports = async function() {
   try {
     // ensure we are on master
@@ -17,32 +18,34 @@ module.exports = async function() {
     const failedBumps = [];
     const successfullBumps = [];
     const outdateDependencies = await fetchOutdatedDependencies();
-    const totalDependencies = outdateDependencies.reverse().length;
+    const totalDependencies = outdateDependencies.length;
+    const pendingPRs = [];
     for (const dependency of outdateDependencies) {
       const { found, newBranch } = await makeBranch(dependency);
       if (found) {
         console.log(`Branch was found ${found}`);
         console.log('checking if a PR already exists');
-        // TODO: add logic to handle existing  branch and PR
-        await switchToMaster();
-        continue;
+        const {
+          data: { total_count }
+        } = await findPR(dependency, found);
+        if (total_count > 0) {
+          console.log(`pull request found!`);
+        } else {
+          console.log(`pull request not found!`);
+          pendingPRs.push({ dependency, branch: newBranch });
+        }
+      } else {
+        await updatePackageJson(dependency);
+        await runApmInstall();
+        await createCommit(dependency);
+        await publishBranch(newBranch);
+        pendingPRs.push({ dependency, branch: newBranch });
       }
 
-      await updatePackageJson(dependency);
-      await runApmInstall();
-      await createCommit(dependency);
-      await publishBranch(newBranch);
-
-      const { status } = await createPR(dependency, newBranch);
-      status === 201
-        ? successfullBumps.push(dependency)
-        : failedBumps.push({
-            module: dependency.moduleName,
-            reason: `couldn't create pull request`
-          });
       await switchToMaster();
     }
-
+    // create PRs here
+    console.log(pendingPRs);
     console.log(
       `Total dependencies: ${totalDependencies} Sucessfull: ${
         successfullBumps.length

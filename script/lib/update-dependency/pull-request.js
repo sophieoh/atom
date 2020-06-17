@@ -15,22 +15,21 @@ module.exports = {
     { moduleName, isCorePackage, latest, installed },
     branch
   ) => {
+    let description = `Bumps ${moduleName} from ${installed} to ${latest}`;
+    if (isCorePackage) {
+      description = `*List of changes between ${moduleName}@${installed} and ${moduleName}@${latest}: https://github.com/atom/${moduleName}/compare/v${installed}...v${latest}*`;
+    }
+
     return requestWithAuth('POST /repos/:owner/:repo/pulls', {
-      title: `:arrow_up:${moduleName}`,
-      body: () => {
-        if (!isCorePackage) {
-          return `Bumps ${moduleName} from ${installed} to ${latest}`;
-        }
-        return `*List of changes between ${moduleName}@${installed} and ${moduleName}@${latest}: https://github.com/atom/${moduleName}/compare/v${installed}...v${latest}*`;
-      },
+      title: `:arrow_up:${moduleName}@${latest}`,
+      body: description,
       base: 'master',
       head: branch
     });
   },
-  getPR: async branch => {
-    return requestWithAuth('GET /repos/:owner/:repo/pulls', {
-      head: branch,
-      base: 'master'
+  findPR: async ({ moduleName, latest }, branch) => {
+    return requestWithAuth('GET /search/issues', {
+      q: `${moduleName} type:pr ${moduleName}@${latest} in:title repo:atom/atom head:${branch}`
     });
   }
 };
