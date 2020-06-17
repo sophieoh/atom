@@ -4,7 +4,7 @@ const requestWithAuth = request.defaults({
   baseUrl: 'https://api.github.com',
   headers: {
     'user-agent': 'myApp/1.2.3',
-    authorization: 'token 0d4a6af55d29c30faef4fedc9dd15e1893c3a334'
+    authorization: `token ${process.env.AUTH_TOKEN}`
   },
   owner: 'atom',
   repo: 'atom'
